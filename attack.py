@@ -3,12 +3,9 @@ import cloudscraper
 import requests
 import string
 
-from bs4 import BeautifulSoup
 from urllib.parse import unquote, urlparse
 from gc import collect
 from loguru import logger
-from os import system
-from requests import get
 from sys import stderr
 from threading import Thread
 from random import choice
@@ -33,8 +30,6 @@ ALLOVED_MD_CHARS = string.digits
 
 BANK_IPS = ["https://185.170.2.7"]
 MAX_REQUESTS = 1000
-
-PROXY_CHECKING = "https://www.google.com"
 
 
 def base_scraper():
