@@ -13,7 +13,15 @@ http://www.024.by/
 http://www.belnovosti.by/
 https://mogilevnews.by/
 http://www.mil.by/
-https://yandex.by/
+https://www.sberbank.ru/ru/person
+https://www.tinkoff.ru/
+https://api.sberbank.ru/prod/tokens/v2/oauth
+https://api.sberbank.ru/prod/tokens/v2/oidc
+https://tinkoff.ru
+https://сdn-tinkoff.ru
+https://dp.tinkoff.ru
+https://acdn.tinkoff.ru
+https://id.tinkoff.ru
 http://www.slonves.by/
 http://www.ctv.by/
 https://radiobelarus.by/
