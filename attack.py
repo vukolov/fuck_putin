@@ -106,7 +106,7 @@ def mainth(protocol, ip, proxy_name, region):
             sites.pop(index_)
             continue
 
-        if region != 'all' and not current_target.find(region):
+        if region != 'all' and current_target.find(region) < 0:
             sites.pop(index_)
             continue
 
@@ -156,8 +156,8 @@ if __name__ == '__main__':
         ('http://', 'http://193.23.50.206:11335', 'mobile', '.ru', ),
         ('https://', 'http://193.23.50.164:10215', 'residental', '.ru', ),
         ('https://', 'socks5://193.23.50.164:10216', 'socks', '.ru', ),
-        ('http://', 'http://143.110.243.165:10815', 'mobile', '.by', ),
-        ('https://', 'http://109.248.7.93:11108', 'residental', '.by',),
+        ('http://', 'http://143.110.243.165:10815', 'mobile', 'all', ),
+        ('https://', 'http://109.248.7.93:11108', 'residental', 'all',),
     ]
     for _ in range(threads):
         Thread(target=mainth, args=choice(proxies)).start()
