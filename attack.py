@@ -102,9 +102,9 @@ def mainth(protocol, ip, proxy_name, region):
 
         index_ = randint(0, len(sites) - 1)
         current_target = sites[index_]
-        # if not current_target.startswith(protocol):
-        #     sites.pop(index_)
-        #     continue
+        if not current_target.startswith(protocol):
+            sites.pop(index_)
+            continue
 
         if region != 'all' and not current_target.find(region):
             sites.pop(index_)
