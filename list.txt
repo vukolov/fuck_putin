@@ -80,3 +80,16 @@ http://www.belneftekhim.by
 http://www.bellegprom.by
 http://www.energo.by
 http://belres.by/ru/
+https://admin.gazprombank.ru
+https://gazprombank.ru
+https://tinkoff.ru
+https://id.tinkoff.ru
+https://s3.tinkoff.ru
+https://tinkoff.ru/invest/account
+https://mobile.tinkoff.ru
+https://vtb.ru
+https://admin.vtb.ru
+https://id.vtb.ru
+https://homecredit.ru
+https://admin.homecredit.ru
+https://intranet.homecredit.ru

