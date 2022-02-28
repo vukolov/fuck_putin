@@ -126,7 +126,7 @@ def mainth(protocol, ip, proxy_name, region):
                 logger.info("ATTACKED; RESPONSE CODE: " +
                             str(response.status_code) + " TARGET: " + current_target + " PROXY: " + proxy_name +
                             " | " + region)
-                if response.status_code == 404 or counter403[current_target] >= 100:
+                if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 100)):
                     sites.pop(index_)
                     break
                 if response.status_code == 403:
