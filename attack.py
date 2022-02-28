@@ -138,9 +138,13 @@ def mainth():
                     response = scraper.get(current_target)
                 logger.info("ATTACKED; RESPONSE CODE: " +
                             str(response.status_code) + " " + data)
+                if response.status_code == 404:
+                    sites.pop(index_)
+                    break
             except Exception as err:
                 logger.warning("GOT ISSUE WHILE ATTACKING " + data)
-                # sites.pop(index_)
+                sites.pop(index_)
+                break
 
 
 def cleaner():
