@@ -124,7 +124,9 @@ def mainth(protocol, ip, proxy_name, region):
                 else:
                     response = scraper.get(current_target)
                 logger.info("ATTACKED; RESPONSE CODE: " +
-                            str(response.status_code) + " TARGET: " + current_target + " PROXY: " + proxy_name +
+                            str(response.status_code) + " (" +
+                            (str(counter403[current_target]) if current_target in counter403 else '0') +
+                            ") TARGET: " + current_target + " PROXY: " + proxy_name +
                             " | " + region)
                 if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 100)):
                     sites.pop(index_)
