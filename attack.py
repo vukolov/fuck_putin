@@ -10,6 +10,7 @@ from sys import stderr
 from threading import Thread
 from random import choice
 from random import randint
+from random import random
 from time import sleep
 from urllib3 import disable_warnings
 from pyuseragents import random as random_useragent
@@ -131,7 +132,7 @@ def cleaner():
 def get_sites():
     # with open('list.txt') as f:
     #     sites = f.read().splitlines()
-    return loads(requests.get("https://gist.githubusercontent.com/Mekhanik/3d90e637a86401bf726b489d2adeb958/raw/d272857059be790aa7b24100d2ef0859aabe6cf5/tg").content)
+    return loads(requests.get("https://gist.github.com/Mekhanik/3d90e637a86401bf726b489d2adeb958/raw/tg?a=" + str(random())).content)
 
 
 def get_proxies():
@@ -142,7 +143,7 @@ def get_proxies():
     #     # ('http://', 'http://143.110.243.165:10815', 'mobile', 'all', ),
     #     # ('https://', 'http://109.248.7.93:11108', 'residental', 'all',),
     # ]
-    return loads(requests.get("https://gist.githubusercontent.com/Mekhanik/6d36aa2f722b3fd957ca5521ce0242b2/raw/788e61df5031b62183aab3c59f64b9b7a58ce2d7/px").content)
+    return loads(requests.get("https://gist.githubusercontent.com/Mekhanik/6d36aa2f722b3fd957ca5521ce0242b2/raw/px?a=" + str(random())).content)
 
 
 if __name__ == '__main__':
