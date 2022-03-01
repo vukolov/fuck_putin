@@ -109,7 +109,7 @@ def mainth(protocol, ip, proxy_name, region):
                 if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 30)):
                     sites.pop(index_)
                     break
-                if response.status_code == 403:
+                if response.status_code == 403 or response.status_code == 502:
                     if current_target not in counter403:
                         counter403[current_target] = 0
                     counter403[current_target] += 1
