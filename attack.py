@@ -114,7 +114,7 @@ def mainth(protocol, ip, proxy_name, region):
                         counter403[current_target] = 0
                     counter403[current_target] += 1
                 else:
-                    if current_target in counter403:
+                    if current_target in counter403 and counter403[current_target] > 0:
                         counter403[current_target] -= 1
 
             except Exception as err:
