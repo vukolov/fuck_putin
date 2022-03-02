@@ -169,16 +169,17 @@ def get_proxies():
 def stat_visualiser(queue_counters):
     counter_by_sites = {}
     while True:
-        rec = queue_counters.get(block=True)
-        if rec['proxy'] not in counter_by_sites:
-            counter_by_sites[rec['proxy']] = {}
-        if rec['target'] not in counter_by_sites[rec['proxy']]:
-            counter_by_sites[rec['proxy']][rec['target']] = {}
-        if rec['status'] not in counter_by_sites[rec['proxy']][rec['target']]:
-            counter_by_sites[rec['proxy']][rec['target']][rec['status']] = 0
-        counter_by_sites[rec['proxy']][rec['target']][rec['status']] += rec['value']
+        while queue_counters.qsize() > 0:
+            rec = queue_counters.get(block=True)
+            if rec['proxy'] not in counter_by_sites:
+                counter_by_sites[rec['proxy']] = {}
+            if rec['target'] not in counter_by_sites[rec['proxy']]:
+                counter_by_sites[rec['proxy']][rec['target']] = {}
+            if rec['status'] not in counter_by_sites[rec['proxy']][rec['target']]:
+                counter_by_sites[rec['proxy']][rec['target']][rec['status']] = 0
+            counter_by_sites[rec['proxy']][rec['target']][rec['status']] += rec['value']
+            queue_counters.task_done()
         logger.info(json.dumps(counter_by_sites, indent=4))
-        queue_counters.task_done()
         time.sleep(5)
         os.system('clear')
 
