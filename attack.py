@@ -203,8 +203,7 @@ if __name__ == '__main__':
     proxies = get_proxies()
     for _ in range(threads):
         args_ = choice(proxies)
-        args_.append(lock)
-        Thread(target=mainth, args=args_).start()
+        Thread(target=mainth, args=args_ + [lock]).start()
 
     Thread(target=cleaner, daemon=True).start()
     Thread(target=stat_visualiser, args=(lock, )).start()
