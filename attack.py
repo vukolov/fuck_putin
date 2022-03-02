@@ -23,7 +23,7 @@ from json import loads
 
 disable_warnings()
 logger.remove()
-logger.add(stderr, format="<white>{time:HH:mm:ss}</white> | <level>{level: <8}</level> | <cyan>{line}</cyan> - <white>{message}</white>")
+#logger.add(stderr, format="<white>{time:HH:mm:ss}</white> | <level>{level: <8}</level> | <cyan>{line}</cyan> - <white>{message}</white>")
 logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{message}</level>")
 # logger.add(sys.stdout, colorize=True, format="<green>{time}</green> {extra[proxy]} {extra[target]} {extra[err_code]} {extra[err_count]} <level>{message}</level>")
 # logger.add(sys.stdout, serialize=True)
@@ -78,6 +78,7 @@ def mainth(protocol, ip, proxy_name, region):
             sites = get_sites()
             proxies = get_proxies()
             (protocol, ip, proxy_name, region) = choice(proxies)
+            counter_by_sites[proxy_name] = {}
         scraper = base_scraper()
         # logger.info("GET RESOURCES FOR ATTACK")
         # data = choice(sites)
