@@ -176,6 +176,7 @@ def stat_visualiser(queue_counters):
             counter_by_sites[rec['proxy']][rec['target']][rec['status']] = 0
         counter_by_sites[rec['proxy']][rec['target']][rec['status']] += rec['value']
         logger.info(json.dumps(counter_by_sites, indent=4))
+        queue_counters.task_done()
         time.sleep(5)
         os.system('clear')
 
