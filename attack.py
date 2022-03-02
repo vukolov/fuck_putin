@@ -175,16 +175,8 @@ def stat_visualiser(queue_counters):
         if rec['status'] not in counter_by_sites[rec['proxy']][rec['target']]:
             counter_by_sites[rec['proxy']][rec['target']][rec['status']] = 0
         counter_by_sites[rec['proxy']][rec['target']][rec['status']] += rec['value']
-        # {extra[proxy]} {extra[target]} {extra[err_code]} {extra[err_count]}
         logger.info(json.dumps(counter_by_sites, indent=4))
-        # for proxy, targets in counter_by_sites.items():
-        #     logger.info(proxy + ":", enqueue=True)
-        #     for target, counters in targets.items():
-        #         logger.info(target + ":")
-        #         for err_code, count_ in counters.items():
-        #             logger.info(str(err_code) + " => " + str(count_))
-
-        time.sleep(3)
+        time.sleep(5)
         os.system('clear')
 
 
