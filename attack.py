@@ -25,7 +25,7 @@ from queue import Queue
 disable_warnings()
 logger.remove()
 #logger.add(stderr, format="<white>{time:HH:mm:ss}</white> | <level>{level: <8}</level> | <cyan>{line}</cyan> - <white>{message}</white>")
-logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{message}</level>")
+logger.add(sys.stdout, colorize=True, format="<green>{time:HH:mm:ss}</green> <level>{message}</level>")
 # logger.add(sys.stdout, colorize=True, format="<green>{time}</green> {extra[proxy]} {extra[target]} {extra[err_code]} {extra[err_count]} <level>{message}</level>")
 # logger.add(sys.stdout, serialize=True)
 threads = int(input('Кількість потоків: '))
@@ -81,7 +81,7 @@ def mainth(protocol, ip, proxy_name, region, queue_counters):
         # logger.info("GET RESOURCES FOR ATTACK")
         # data = choice(sites)
         if len(sites) <= 0:
-            # logger.info("MOSKALI SOSUT! ATTACK WILL BE RESTARTED IN FEW MINUTES")
+            logger.info("MOSKALI SOSUT! ATTACK WILL BE RESTARTED IN FEW MINUTES")
             sleep(300)
             counter_total = 100500
             continue
@@ -141,7 +141,9 @@ def get_sites():
     # with open('list.txt') as f:
     #     sites = f.read().splitlines()
     # return sites
-    return loads(requests.get("https://gist.github.com/Mekhanik/3d90e637a86401bf726b489d2adeb958/raw/tg?a=" + str(random())).content)
+    sites = loads(requests.get("https://gist.github.com/Mekhanik/3d90e637a86401bf726b489d2adeb958/raw/tg?a=" + str(random())).content)
+    logger.info(json.dumps(sites, indent=4))
+    return sites
 
 
 def get_proxies():
