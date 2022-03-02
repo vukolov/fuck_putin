@@ -23,7 +23,7 @@ from json import loads
 
 disable_warnings()
 logger.remove()
-# logger.add(stderr, format="<white>{time:HH:mm:ss}</white> | <level>{level: <8}</level> | <cyan>{line}</cyan> - <white>{message}</white>")
+logger.add(stderr, format="<white>{time:HH:mm:ss}</white> | <level>{level: <8}</level> | <cyan>{line}</cyan> - <white>{message}</white>")
 logger.add(sys.stdout, colorize=True, format="<green>{time}</green> <level>{message}</level>")
 # logger.add(sys.stdout, colorize=True, format="<green>{time}</green> {extra[proxy]} {extra[target]} {extra[err_code]} {extra[err_count]} <level>{message}</level>")
 # logger.add(sys.stdout, serialize=True)
@@ -128,7 +128,7 @@ def mainth(protocol, ip, proxy_name, region):
                 if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 30)):
                     sites.pop(index_)
                     break
-                if response.status_code == 403 or (500 <= response.status_code < 600):
+                if response.status_code == 403 or (500 <= int(response.status_code) < 600):
                     if current_target not in counter403:
                         counter403[current_target] = 0
                     counter403[current_target] += 1
