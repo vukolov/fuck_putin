@@ -181,7 +181,16 @@ def stat_visualiser(queue_counters):
                 counter_by_sites[rec['proxy']][rec['target']][rec['status']] = 0
             counter_by_sites[rec['proxy']][rec['target']][rec['status']] += rec['value']
             queue_counters.task_done()
-        logger.info(json.dumps(counter_by_sites, indent=4))
+        # logger.info(json.dumps(counter_by_sites, indent=4))
+        str_ = ''
+        for proxy, targets in counter_by_sites.items():
+            str_ += proxy + "\n"
+            for target, codes in targets.items():
+                str_ += target
+                for code, count in codes.items():
+                    str_ += f" {code}:{count}"
+                str_ += " |"
+        logger.info(str_)
         time.sleep(5)
         if datetime.now() > reset_time:
             counter_by_sites = {}
