@@ -124,7 +124,7 @@ def mainth(protocol, cur_proxy, proxy_name, region, queue_counters, sites):
                     if current_target in counter403 and counter403[current_target] > 0:
                         counter403[current_target] -= 1
 
-            except Exception as err:
+            except BaseException as err:
                 # logger.warning("GOT ISSUE WHILE ATTACKING " + current_target)
                 queue_counters.put({'proxy': proxy_name, 'target': current_target, 'status': 'e', 'value': 1})
                 sites.pop(index_)
@@ -155,6 +155,7 @@ def get_proxies():
     #     # ('http://', 'http://143.110.243.165:10815', 'mobile', 'all', ),
     #     # ('https://', 'http://109.248.7.93:11108', 'residental', 'all',),
     # ]
+    logger.info('Getting proxies...')
     return loads(requests.get("https://gist.githubusercontent.com/Mekhanik/6d36aa2f722b3fd957ca5521ce0242b2/raw/px?a=" + str(random())).content)
 
 
