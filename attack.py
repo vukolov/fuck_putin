@@ -131,8 +131,12 @@ def mainth(protocol, cur_proxy, proxy_name, region, queue_counters, sites):
             except BaseException as err:
                 # logger.warning("GOT ISSUE WHILE ATTACKING " + current_target)
                 queue_counters.put({'proxy': proxy_name, 'target': current_target, 'status': 'e', 'value': 1})
-                sites.pop(index_)
-                break
+                try:
+                    sites.pop(index_)
+                except BaseException:
+                    ...
+                finally:
+                    break
 
 
 def cleaner():
