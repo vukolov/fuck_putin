@@ -64,9 +64,8 @@ def generate_MIR_data(url):
     return dat
 
 
-def mainth(protocol, cur_proxy, proxy_name, region, queue_counters):
+def mainth(protocol, cur_proxy, proxy_name, region, queue_counters, sites):
     # Fetching data with proxy and targets
-    sites = get_sites()
 
     counter403 = {}
 
@@ -127,7 +126,7 @@ def mainth(protocol, cur_proxy, proxy_name, region, queue_counters):
 
             except Exception as err:
                 # logger.warning("GOT ISSUE WHILE ATTACKING " + current_target)
-                queue_counters.put({'proxy': proxy_name, 'target': current_target, 'status': 'exceptions', 'value': 1})
+                queue_counters.put({'proxy': proxy_name, 'target': current_target, 'status': 'e', 'value': 1})
                 sites.pop(index_)
                 break
 
@@ -189,7 +188,7 @@ def stat_visualiser(queue_counters):
                 str_ += target
                 for code, count in codes.items():
                     str_ += f" {code}:{count}"
-                str_ += " |"
+                str_ += " | "
         logger.info(str_)
         time.sleep(5)
         if datetime.now() > reset_time:
@@ -201,9 +200,10 @@ def stat_visualiser(queue_counters):
 if __name__ == '__main__':
     queue_counters = Queue()
     proxies = get_proxies()
+    sites = get_sites()
     for _ in range(threads):
         args_ = choice(proxies)
-        Thread(target=mainth, args=args_ + [queue_counters]).start()
+        Thread(target=mainth, args=args_ + [queue_counters, sites]).start()
 
     Thread(target=cleaner, daemon=True).start()
     Thread(target=stat_visualiser, args=(queue_counters, )).start()
