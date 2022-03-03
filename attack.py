@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
+from argparse import ArgumentParser
 import json
 
 import cloudscraper
@@ -30,7 +31,6 @@ logger.remove()
 logger.add(sys.stdout, colorize=True, format="<green>{time:HH:mm:ss}</green> <level>{message}</level>")
 # logger.add(sys.stdout, colorize=True, format="<green>{time}</green> {extra[proxy]} {extra[target]} {extra[err_code]} {extra[err_count]} <level>{message}</level>")
 # logger.add(sys.stdout, serialize=True)
-threads = int(input('Кількість потоків: '))
 
 
 ALLOVED_PAREQ_CHARS = string.ascii_letters + string.digits
@@ -230,6 +230,15 @@ if __name__ == '__main__':
     queue_counters = Queue()
     proxies = get_proxies()
     sites = get_sites()
+
+    parser = ArgumentParser()
+    parser.add_argument("-w", "--workers", type=int, help="number of simultaneously running workers")
+    args = parser.parse_args()
+    if args.workers:
+        threads = int(args.workers)
+    else:
+        threads = int(input('Кількість потоків: '))
+
     for _ in range(threads):
         args_ = choice(proxies)
         Thread(target=mainth, args=args_ + [queue_counters, sites]).start()
