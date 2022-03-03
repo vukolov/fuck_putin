@@ -184,7 +184,7 @@ def stat_visualiser(queue_counters):
         # logger.info(json.dumps(counter_by_sites, indent=4))
         str_ = ''
         for proxy, targets in counter_by_sites.items():
-            str_ += proxy + "\n"
+            str_ += "\n" + proxy + "\n"
             for target, codes in targets.items():
                 str_ += target
                 for code, count in codes.items():
