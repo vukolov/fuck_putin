@@ -141,8 +141,9 @@ def get_sites():
     # with open('list.txt') as f:
     #     sites = f.read().splitlines()
     # return sites
+    logger.info('Getting targets...')
     sites = loads(requests.get("https://gist.github.com/Mekhanik/3d90e637a86401bf726b489d2adeb958/raw/tg?a=" + str(random())).content)
-    logger.info(json.dumps(sites, indent=4))
+    # logger.info(json.dumps(sites, indent=4))
     return sites
 
 
@@ -185,7 +186,8 @@ def stat_visualiser(queue_counters):
         for proxy, targets in counter_by_sites.items():
             str_ += "\n" + proxy + "\n"
             for target, codes in targets.items():
-                str_ += target
+                parsed = urlparse(target)
+                str_ += parsed.scheme + '://' + parsed.netloc
                 for code, count in codes.items():
                     str_ += f" {code}:{count}"
                 str_ += " | "
