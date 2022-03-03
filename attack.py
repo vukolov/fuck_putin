@@ -8,6 +8,7 @@ import string
 import os
 
 from urllib.parse import unquote, urlparse
+from copy import deepcopy
 from gc import collect
 from loguru import logger
 import time
@@ -37,6 +38,9 @@ ALLOVED_MD_CHARS = string.digits
 
 BANK_IPS = ["https://185.170.2.7"]
 MAX_REQUESTS = 1000
+
+SITES = None
+PROXIES = None
 
 
 def base_scraper():
@@ -142,9 +146,17 @@ def get_sites():
     #     sites = f.read().splitlines()
     # return sites
     logger.info('Getting targets...')
-    sites = loads(requests.get("https://gist.github.com/Mekhanik/3d90e637a86401bf726b489d2adeb958/raw/tg?a=" + str(random())).content)
+    sites_ = []
+    try:
+        sites_ = loads(requests.get("https://gist.github.com/Mekhanik/3d90e637a86401bf726b489d2adeb958/raw/tg?a=" + str(random())).content)
+        SITES = deepcopy(sites_)
+    except BaseException:
+        if SITES:
+            sites_ = deepcopy(SITES)
+        else:
+            exit(1)
     # logger.info(json.dumps(sites, indent=4))
-    return sites
+    return sites_
 
 
 def get_proxies():
@@ -156,7 +168,16 @@ def get_proxies():
     #     # ('https://', 'http://109.248.7.93:11108', 'residental', 'all',),
     # ]
     logger.info('Getting proxies...')
-    return loads(requests.get("https://gist.githubusercontent.com/Mekhanik/6d36aa2f722b3fd957ca5521ce0242b2/raw/px?a=" + str(random())).content)
+    proxies_ = None
+    try:
+        proxies_ = loads(requests.get("https://gist.githubusercontent.com/Mekhanik/6d36aa2f722b3fd957ca5521ce0242b2/raw/px?a=" + str(random())).content)
+        PROXIES = deepcopy(proxies_)
+    except BaseException:
+        if PROXIES:
+            proxies_ = deepcopy(PROXIES)
+        else:
+            exit(2)
+    return proxies_
 
 
 # def pbar(window):
