@@ -78,6 +78,7 @@ def mainth(protocol, cur_proxy, proxy_name, region, queue_counters, sites):
     while True:
         counter_total += 1
         if counter_total > 10000:
+            counter_total = 0
             sites = get_sites()
             proxies = get_proxies()
             (protocol, cur_proxy, proxy_name, region) = choice(proxies)
