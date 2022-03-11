@@ -103,7 +103,7 @@ def mainth(protocol, cur_proxy, proxy_name, region, queue_counters, sites):
                 if current_request_type == 'post':
                     response = scraper.post(current_target, data=sites[index_]['body'], headers=sites[index_]['headers'])
                 else:
-                    response = scraper.get(current_target, verify=False)
+                    response = scraper.get(current_target)
                 queue_counters.put({'proxy': proxy_name, 'target': current_target, 'status': response.status_code, 'value': 1})
 
                 if response.status_code == 404 or ((current_target in counter403) and (counter403[current_target] >= 30)):
@@ -135,12 +135,11 @@ def cleaner():
 
 
 def get_sites():
-    # with open('list.txt') as f:
-    #     sites = f.read().splitlines()
-    # return sites
     logger.info('Getting targets...')
     sites_ = []
     try:
+        # with open('list.txt') as f:
+        #     sites_get = f.read().splitlines()
         sites_get = loads(requests.get("https://gist.github.com/Mekhanik/3d90e637a86401bf726b489d2adeb958/raw/tg?a=" + str(random())).content)
         sites_post = loads(requests.get("https://gist.githubusercontent.com/Mekhanik/a378f10370dbca0ed587c2467eafb8f8/raw?a=" + str(random())).content)
         for url in sites_get:
@@ -160,7 +159,7 @@ def get_sites():
 
 def get_proxies():
     # proxies_ = [
-    #     ['https://', 'http://193.23.50.164:10215', 'test', 'all']
+    #     ['https://', 'http://34.65.156.141:4598', 'test', 'all']
     # ]
     logger.info('Getting proxies...')
     proxies_ = None
